@@ -3,7 +3,7 @@ import pygame
 from Message import *
 
 
-class AnalogClock(pygame.sprite.Sprite):
+class AnalogFace(pygame.sprite.Sprite):
     """Clock object"""
     
     def __init__(self, rect, color=(0,0,255)):
@@ -27,6 +27,7 @@ class AnalogClock(pygame.sprite.Sprite):
         pygame.draw.line(self.baseImage, self.color, rect.center, (rect.width/2, 0), 1)
         pygame.draw.line(self.baseImage, self.color, rect.center, (rect.width/2, 0), 1)
         pygame.draw.line(self.baseImage, self.color, rect.center, (rect.width/2, 0), 1)
+        print time.localtime()
         
     def update(self):
         """Update ticks"""
@@ -62,13 +63,24 @@ class AlarmClock:
         self.height = height
         self.time = pygame.time.Clock();
         self.screen = pygame.display.set_mode((self.width, self.height))
+        self.setFace(analog=False)
         self.clock = pygame.sprite.GroupSingle(DigitalFace(pygame.Rect((0, 0),(self.height, self.height))));
 
+    def setFace(self, analog=True):
+        if analog:
+            self.analogface = True
+            self.clock = pygame.sprite.GroupSingle(AnalogFace(pygame.Rect((0, 0),(self.height, self.height))));
+        else:
+            self.analogface = False
+            self.clock = pygame.sprite.GroupSingle(DigitalFace(pygame.Rect((0, 0),(self.height, self.height))));
+            
     def run(self):
         while 1:
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEBUTTONUP:
-                    sys.exit()
+                    pos = pygame.mouse.get_pos()
+                    if self.clock.sprite.rect.collidepoint(pos):
+                        self.setFace(analog=(True if self.analogface == False else False))
                 if event.type == pygame.QUIT:
                     sys.exit()
             self.clock.update()
