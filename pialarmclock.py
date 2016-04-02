@@ -18,5 +18,5 @@ class AlarmClock:
                     
 if __name__ == "__main__":
         MainWindow = AlarmClock()
-        AlarmClock.MainLoop()
+        MainWindow.MainLoop()
         
