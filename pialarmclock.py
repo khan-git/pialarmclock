@@ -67,6 +67,8 @@ class AlarmClock:
     def run(self):
         while 1:
             for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONUP:
+                    sys.exit()
                 if event.type == pygame.QUIT:
                     sys.exit()
             self.clock.update()
