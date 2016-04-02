@@ -8,7 +8,7 @@ class AlarmClock:
         pygame.init()
         self.width = width
         self.height = height
-        self.screen = pygame.display.set_mode((self.width, self.height))
+        self.screen = pygame.display.set_mode((self.width, self.height),pygame.FULLSCREEN)
         
     def MainLoop(self):
         while 1:
