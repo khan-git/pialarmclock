@@ -186,7 +186,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--fullscreen", action="store_true", help="Full screen", default=False)
-    parser.add_argument("-m", "--mousevisible", action="store_true", help="Mouse visible", default=True)
+    parser.add_argument("-m", "--mousevisible", action="store_false", help="Mouse visible", default=True)
     args = parser.parse_args()
 
     clock = AlarmClock(fullscreen=args.fullscreen, mousevisible=args.mousevisible)
