@@ -75,7 +75,7 @@ class Button(pygame.sprite.Sprite):
         
     def touchDown(self):
         rect = self.baseImage.get_rect()
-        pygame.draw.circle(self.baseImage, self.color, rect.center, rect.width/2, rect.width/2);
+        pygame.draw.circle(self.baseImage, self.color, rect.center, rect.width/2, 0);
         
     def touchUp(self):
         rect = self.baseImage.get_rect()
