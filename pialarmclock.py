@@ -57,12 +57,15 @@ class DigitalFace(pygame.sprite.Sprite):
 class AlarmClock:
     """Alarm clock class"""
     
-    def __init__(self, width=320, height=240):
+    def __init__(self, width=320, height=240, fullscreen=False):
         pygame.init()
         self.width = width
         self.height = height
         self.time = pygame.time.Clock();
-        self.screen = pygame.display.set_mode((self.width, self.height))
+        if fullscreen:
+            self.screen = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
+        else:
+            self.screen = pygame.display.set_mode((self.width, self.height))
         self.setFace(analog=False)
         self.clock = pygame.sprite.GroupSingle(DigitalFace(pygame.Rect((0, 0),(self.height, self.height))));
 
@@ -89,6 +92,10 @@ class AlarmClock:
             self.time.tick(1)
             
 if __name__ == "__main__":
-        clock = AlarmClock()
-        clock.run()
-        
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--fullscreen", action="store_true", help="Full screen", default=False)
+    args = parser.parse_args()
+    print args.fullscreen
+    clock = AlarmClock(fullscreen=args.fullscreen)
+    clock.run()
