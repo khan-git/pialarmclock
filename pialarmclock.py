@@ -90,8 +90,9 @@ class Button(pygame.sprite.Sprite):
 class AlarmClock:
     """Alarm clock class"""
     
-    def __init__(self, width=320, height=240, fullscreen=False):
+    def __init__(self, width=320, height=240, fullscreen=False, mousevisible=False):
         pygame.init()
+        pygame.mouse.set_visible(mousevisible)
         self.width = width
         self.height = height
         self.time = pygame.time.Clock()
@@ -157,7 +158,8 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--fullscreen", action="store_true", help="Full screen", default=False)
+    parser.add_argument("-m", "--mousevisible", action="store_true", help="Mouse visible", default=False)
     args = parser.parse_args()
 
-    clock = AlarmClock(fullscreen=args.fullscreen)
+    clock = AlarmClock(fullscreen=args.fullscreen, mousevisible=args.mousevisible)
     clock.run()
