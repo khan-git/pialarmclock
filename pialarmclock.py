@@ -1,6 +1,7 @@
 import os, sys, time, datetime
 import pygame
 from Message import *
+import math
 
 
 class AnalogFace(pygame.sprite.Sprite):
@@ -16,20 +17,46 @@ class AnalogFace(pygame.sprite.Sprite):
     def createImages(self):
         """Draw Logan."""
         self.baseImage = pygame.Surface((self.rect.width, self.rect.height))
-        rect = self.baseImage.get_rect()
 
-        ## Face
-        pygame.draw.circle(self.baseImage, self.color, rect.center, rect.height/2, 1);
 
+    def calcTickPos(self, center, radius, value, stretch=1.0):
+        """Value is the value to calculate position for on a 60 items circle"""
+        value = value - 15
+        value = value % 60
+        
+        value = 60 - value
+        
+        x = math.cos(2 * math.pi * (value/60.0))
+        y = -1 * math.sin(2 * math.pi * (value / 60.0))
+        
+        x *= stretch
+        y *= stretch
+        
+        x += center[0]
+        y += center[1]
+        
+        return (x,y)
+    
     def drawArms(self):
         """Draw tha actual arms"""
         rect = self.baseImage.get_rect()
-        pygame.draw.line(self.baseImage, self.color, rect.center, (rect.width/2, 0), 1)
-        pygame.draw.line(self.baseImage, self.color, rect.center, (rect.width/2, 0), 1)
-        pygame.draw.line(self.baseImage, self.color, rect.center, (rect.width/2, 0), 1)
+
+        local = time.localtime(time.time())
+        sec = self.calcTickPos(rect.center, rect.center[0], local[5]+(time.time() % 1), stretch=rect.center[0])
+        pygame.draw.line(self.baseImage, self.color, rect.center, sec, 1)
+        
+        minute = self.calcTickPos(rect.center, rect.center[0], local[4]+local[5]/60.0, stretch=rect.center[0])
+        pygame.draw.line(self.baseImage, self.color, rect.center, minute, 4)
+        
+        hour = self.calcTickPos(rect.center, rect.center[0], local[3]%12*5+local[4]*5/60.0, stretch=rect.center[0]/4*3)
+        pygame.draw.line(self.baseImage, self.color, rect.center, hour, 8)
         
     def update(self):
         """Update ticks"""
+        self.image.fill(pygame.Color("black"))
+        ## Face
+        rect = self.baseImage.get_rect()
+        pygame.draw.circle(self.baseImage, self.color, rect.center, rect.height/2, 1);
         self.drawArms()
 
 class DigitalFace(pygame.sprite.Sprite):
@@ -40,7 +67,7 @@ class DigitalFace(pygame.sprite.Sprite):
         self.rect = pygame.Rect(rect)
         self.createImages()
         self.image = self.baseImage
-
+        
     def createImages(self):
         """Draw Logan."""
         self.baseImage = pygame.Surface((self.rect.width, self.rect.height))
@@ -50,11 +77,12 @@ class DigitalFace(pygame.sprite.Sprite):
         local = time.localtime(time.time())
         
         timeSprite = pygame.sprite.GroupSingle(
-            Message((time.strftime("%H:%M:%S", local),), vector=(0,0), fontsize=90, align="left", padding=0))
-        timeSprite.sprite.rect.topleft = (0,40)
+            Message((time.strftime("%H:%M:%S", local),), vector=(0,0), fontsize=90, align="left", padding=0, fgcolor=(0,0,255)))
+        surfaceRect = self.image.get_rect()
+        timeSprite.sprite.rect.midbottom = surfaceRect.center
         timeSprite.draw(self.baseImage)
         dateSprite = pygame.sprite.GroupSingle(
-            Message((time.strftime("%Y-%m-%d", local),), vector=(0,0), fontsize=25, align="left", padding=0))
+            Message((time.strftime("%Y-%m-%d", local),), vector=(0,0), fontsize=25, align="left", padding=0, fgcolor=(0,0,255)))
         dateSprite.sprite.rect.midtop = timeSprite.sprite.rect.midbottom
         dateSprite.draw(self.baseImage)
         
@@ -124,10 +152,10 @@ class AlarmClock:
     def setFace(self, analog=True):
         if analog:
             self.analogface = True
-            self.clock = pygame.sprite.GroupSingle(AnalogFace(pygame.Rect((0, 0),(self.width/5*4, self.height))))
+            self.clock = pygame.sprite.GroupSingle(AnalogFace(pygame.Rect((0, 0),(self.height, self.height))))
         else:
             self.analogface = False
-            self.clock = pygame.sprite.GroupSingle(DigitalFace(pygame.Rect((0, 0),(self.width/5*4, self.height))))
+            self.clock = pygame.sprite.GroupSingle(DigitalFace(pygame.Rect((0, 0),(self.height, self.height))))
             
     def run(self):
         while 1:
@@ -158,7 +186,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--fullscreen", action="store_true", help="Full screen", default=False)
-    parser.add_argument("-m", "--mousevisible", action="store_true", help="Mouse visible", default=False)
+    parser.add_argument("-m", "--mousevisible", action="store_true", help="Mouse visible", default=True)
     args = parser.parse_args()
 
     clock = AlarmClock(fullscreen=args.fullscreen, mousevisible=args.mousevisible)
