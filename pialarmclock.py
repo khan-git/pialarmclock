@@ -61,9 +61,10 @@ class DigitalFace(pygame.sprite.Sprite):
 
 class Button(pygame.sprite.Sprite):
     
-    def __init__(self, rect, color=(0,0,255)):
+    def __init__(self, rect, color=(0,0,255), action=None):
         pygame.sprite.Sprite.__init__(self)
         self.color = color
+        self.action = action
         self.rect = pygame.Rect(rect)
         self.baseImage = pygame.Surface((self.rect.width, self.rect.height))
         self.image = self.baseImage
@@ -73,8 +74,18 @@ class Button(pygame.sprite.Sprite):
         pygame.draw.circle(self.baseImage, self.color, rect.center, rect.width/2, 1);
         
     def touchDown(self):
-        pass
+        rect = self.baseImage.get_rect()
+        pygame.draw.circle(self.baseImage, self.color, rect.center, rect.width/2, rect.width/2);
         
+    def touchUp(self):
+        rect = self.baseImage.get_rect()
+        self.image.fill(pygame.Color("black"))
+        pygame.draw.circle(self.baseImage, self.color, rect.center, rect.width/2, 1);
+        if self.action is not None:
+            self.action()
+        
+    def setAction(self, action):
+        self.action = action
                  
 class AlarmClock:
     """Alarm clock class"""
@@ -97,6 +108,10 @@ class AlarmClock:
             butt = pygame.sprite.GroupSingle(Button(pygame.Rect((0, 0),(self.height/5, self.height/5))))
             butt.sprite.rect.topright = (self.width, self.height/4*i)
             self.buttons.append(butt)
+        self.buttons[3].sprite.setAction(sys.exit)
+    
+    def action(self):
+        sys.exit()
         
     def setFace(self, analog=True):
         if analog:
@@ -113,11 +128,14 @@ class AlarmClock:
                     pos = pygame.mouse.get_pos()
                     for butt in self.buttons:
                         if butt.sprite.rect.collidepoint(pos):
-                            print "Butt"
+                            butt.sprite.touchDown()
                 if event.type == pygame.MOUSEBUTTONUP:
                     pos = pygame.mouse.get_pos()
                     if self.clock.sprite.rect.collidepoint(pos):
                         self.setFace(analog=(True if self.analogface == False else False))
+                    for butt in self.buttons:
+                        if butt.sprite.rect.collidepoint(pos):
+                            butt.sprite.touchUp()
                 if event.type == pygame.QUIT:
                     sys.exit()
             self.clock.update()
@@ -126,7 +144,7 @@ class AlarmClock:
                 butt.update()
                 butt.draw(self.screen)
             pygame.display.flip()
-            self.time.tick(1)
+            self.time.tick(25)
             
 if __name__ == "__main__":
     import argparse
