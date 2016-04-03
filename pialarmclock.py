@@ -108,11 +108,18 @@ class AlarmClock:
             butt = pygame.sprite.GroupSingle(Button(pygame.Rect((0, 0),(self.height/5, self.height/5))))
             butt.sprite.rect.topright = (self.width, self.height/4*i)
             self.buttons.append(butt)
+        self.buttons[0].sprite.setAction(self.toggleFace)
         self.buttons[3].sprite.setAction(sys.exit)
     
     def action(self):
         sys.exit()
-        
+    
+    def toggleFace(self):
+        if self.analogface:
+            self.setFace(analog=False)
+        else:
+            self.setFace()
+            
     def setFace(self, analog=True):
         if analog:
             self.analogface = True
@@ -131,8 +138,8 @@ class AlarmClock:
                             butt.sprite.touchDown()
                 if event.type == pygame.MOUSEBUTTONUP:
                     pos = pygame.mouse.get_pos()
-                    if self.clock.sprite.rect.collidepoint(pos):
-                        self.setFace(analog=(True if self.analogface == False else False))
+#                     if self.clock.sprite.rect.collidepoint(pos):
+#                         self.setFace(analog=(True if self.analogface == False else False))
                     for butt in self.buttons:
                         if butt.sprite.rect.collidepoint(pos):
                             butt.sprite.touchUp()
