@@ -2,8 +2,6 @@ import os, sys, time, datetime, random
 import pygame
 from Message import *
 import math
-from matplotlib.cbook import Null
-
 
 class AnalogFace(pygame.sprite.Sprite):
     """Clock object"""
