@@ -1,7 +1,8 @@
-import os, sys, time, datetime
+import os, sys, time, datetime, random
 import pygame
 from Message import *
 import math
+from matplotlib.cbook import Null
 
 
 class AnalogFace(pygame.sprite.Sprite):
@@ -114,7 +115,63 @@ class Button(pygame.sprite.Sprite):
         
     def setAction(self, action):
         self.action = action
-                 
+
+class Music(object):
+    """ Plays selected audio files or picks a random file named music*.mp3."""
+    def __init__(self):
+        self.music = {};
+        for fileMp3 in os.listdir(os.path.expanduser('~/.config/pialarmclock/audio')):
+            if fileMp3.endswith(".mp3"):
+                fileMp3 = os.path.join(os.path.expanduser('~/.config/pialarmclock/audio'),fileMp3)
+                self.music[fileMp3] = False;
+        if len(self.music) == 0:
+            print "No music found. Music disabled!";
+            self.disabled = True;
+        else:
+            self.disabled = False;
+        self._playing = False
+        
+    def togglePlay(self):
+        if self._playing == True:
+            self.stopMusic()
+            self._playing = False
+        else:
+            self.playMusic()
+            self._playing = True
+    
+    def playMusic(self, music=None):
+        if self.disabled:
+            return;
+        if(music == None):
+            while(True):
+                music = self.music.keys();
+                music = music[random.randrange(len(music))];
+                if(self.music[music] == False):
+                    self.music[music] = True;
+                    break;
+                free = False;
+                for mu in self.music:
+                    if(self.music[mu] == False):
+                        free = True;
+                        break;
+                if(free == False): self.resetPlayed();
+        try:
+            pygame.mixer.music.load(music);
+            pygame.mixer.music.play(-1);
+        except:
+            print(str.format("Error loading music:  {0}.", music));
+            sys.exit();
+
+    def stopMusic(self):
+        if pygame.mixer.music.get_busy():
+            pygame.mixer.music.stop()
+            
+    def resetPlayed(self):
+        if self.disabled:
+            return;
+        for mus in self.music:
+            self.music[mus] = False;
+    
 class AlarmClock:
     """Alarm clock class"""
     
@@ -129,7 +186,10 @@ class AlarmClock:
         else:
             self.screen = pygame.display.set_mode((self.width, self.height))
         self.setFace(analog=False)
+        self.audio = Music()
         self.buttons()
+        self._currentFace = pygame.sprite.GroupSingle(DigitalFace(pygame.Rect((0, 0),(self.height, self.height))))
+        
 
     def buttons(self):
         self.buttons = []
@@ -138,6 +198,7 @@ class AlarmClock:
             butt.sprite.rect.topright = (self.width, self.height/4*i)
             self.buttons.append(butt)
         self.buttons[0].sprite.setAction(self.toggleFace)
+        self.buttons[1].sprite.setAction(self.audio.togglePlay)
         self.buttons[3].sprite.setAction(sys.exit)
     
     def action(self):
@@ -152,10 +213,10 @@ class AlarmClock:
     def setFace(self, analog=True):
         if analog:
             self.analogface = True
-            self.clock = pygame.sprite.GroupSingle(AnalogFace(pygame.Rect((0, 0),(self.height, self.height))))
+            self._currentFace = pygame.sprite.GroupSingle(AnalogFace(pygame.Rect((0, 0),(self.height, self.height))))
         else:
             self.analogface = False
-            self.clock = pygame.sprite.GroupSingle(DigitalFace(pygame.Rect((0, 0),(self.height, self.height))))
+            self._currentFace = pygame.sprite.GroupSingle(DigitalFace(pygame.Rect((0, 0),(self.height, self.height))))
             
     def run(self):
         while 1:
@@ -174,8 +235,8 @@ class AlarmClock:
                             butt.sprite.touchUp()
                 if event.type == pygame.QUIT:
                     sys.exit()
-            self.clock.update()
-            self.clock.draw(self.screen)
+            self._currentFace.update()
+            self._currentFace.draw(self.screen)
             for butt in self.buttons:
                 butt.update()
                 butt.draw(self.screen)
