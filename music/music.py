@@ -4,10 +4,11 @@ class Music(object):
     """ Plays selected audio files or picks a random file named music*.mp3."""
     def __init__(self):
         self.music = {};
-        for fileMp3 in os.listdir(os.path.expanduser('~/.config/pialarmclock/audio')):
-            if fileMp3.endswith(".mp3"):
-                fileMp3 = os.path.join(os.path.expanduser('~/.config/pialarmclock/audio'),fileMp3)
-                self.music[fileMp3] = False;
+        if os.path.exists(os.path.expanduser('~/.config/pialarmclock/audio')) == True:
+            for fileMp3 in os.listdir(os.path.expanduser('~/.config/pialarmclock/audio')):
+                if fileMp3.endswith(".mp3"):
+                    fileMp3 = os.path.join(os.path.expanduser('~/.config/pialarmclock/audio'),fileMp3)
+                    self.music[fileMp3] = False;
         if len(self.music) == 0:
             print "No music found. Music disabled!";
             self.disabled = True;
